@@ -1,22 +1,31 @@
-name: Build JLCPCB Files (USB Version)
+name: Export JLCPCB Gerbers
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: kicad/kicad:8.0
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Generate JLCPCB Gerber, BOM, and CPL
-        uses: Bouni/kicad-jlcpcb-tools@v1
-        with:
-          path: USB-Powered-RCA-Classic/USB-Powered-RCA-Classic.kicad_pro
+      - name: Export Gerbers and Drill Files
+        run: |
+          mkdir -p output/gerbers
+          PCB_FILE=$(find "USB-Powered-RCA-Classic" -name "*.kicad_pcb" | head -n 1)
+          echo "Found PCB file: $PCB_FILE"
+          kicad-cli pcb export gerbers "$PCB_FILE" -o output/gerbers/
+          kicad-cli pcb export drill "$PCB_FILE" -o output/gerbers/
+          cd output/gerbers && zip -r ../gerbers.zip .
 
-      - name: Upload JLCPCB Output Files
+      - name: Upload Gerber ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: JLCPCB-USB-Power-Module
-          path: USB-Powered-RCA-Classic/jlc
+          name: jlcpcb-gerbers
+          path: output/gerbers.zip
