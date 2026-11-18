@@ -1,0 +1,23 @@
+yaml
+name: Build JLCPCB Files (USB Version)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate JLCPCB Gerber, BOM, and CPL
+        uses: Bouni/kicad-jlcpcb-tools@v1
+        with:
+          path: USB-Powered-RCA-Classic/USB-Powered-RCA-Classic.kicad_pro
+
+      - name: Upload JLCPCB Output Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: JLCPCB-USB-Power-Module
+          path: USB-Powered-RCA-Classic/jlc
